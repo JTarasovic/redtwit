@@ -3,7 +3,8 @@
   "description": "A 'bot' connecting reddit and twitter.",
   "author": "Jason Tarasovic <jason@tarasovic.com",
   "dependencies": {
-    "request": "2.34.0"
+    "request": "2.34.0",
+    "redis": "0.10.1"
   },
   "license": "GPLv2",
   "engines": {

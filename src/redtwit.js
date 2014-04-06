@@ -1,26 +1,31 @@
 var request = require ("request");
+var redis = require ("redis");
+var client = redis.createClient();
 var log = require("console").log;
-var util = require("util");
 
-request('http://www.reddit.com/r/android/new.json?sort=new',function(err,resp,body){
+var ts = Date.now() / 1000;
+var offset = 90*60;
+ts = ts - offset;
+var subreddits = ["android", "cypherpunks", "linux"];
+
+
+processSubmissions = function(err,resp,body){
 	if (!err && resp.statusCode == 200) {
 		var newSubmissions = JSON.parse(body);
 		newSubmissions = newSubmissions.data.children;
 		
 		for(var i=0; i < newSubmissions.length; i++) {
-			log(newSubmissions[i].data.title + "\n");
-		}
-
-
-		/*for(var k in newSubmissions) {
-			if ({}.hasOwnProperty.call(newSubmissions,k)) {
-				log(k," = ",newSubmissions[k]);
+			if (newSubmissions[i].data.created_utc > ts) {
+				log(newSubmissions[i].data.title + "\n");
 			};
-		}*/
+		}
+	}
+};
 
-		/*newSubmissions.foreach(function(ele,ind,arr) {
-			log(JSON.stringify(ele.data, null, 4 ));
-		});*/
-		//log(JSON.stringify(newSubmissions, null, 4));
-	};
-})
+getNewSubmissions = function(sub) {
+	request('http://www.reddit.com/r/'+sub+'/new.json?sort=new', processSubmissions})
+}
+
+client.LRANGE(0,-1,redis.print);
+
+//subreddits.forEach(getNewSubmissions);
