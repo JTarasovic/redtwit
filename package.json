@@ -1,0 +1,12 @@
+{
+  "name": "redtwit",
+  "description": "A 'bot' connecting reddit and twitter.",
+  "author": "Jason Tarasovic <jason@tarasovic.com",
+  "dependencies": {
+    "request": "2.34.0"
+  },
+  "license": "GPLv2",
+  "engines": {
+  	"node": "0.10.26"
+  }
+}
