@@ -2,14 +2,18 @@ var request = require ("request");
 var redis = require ("redis")
 var client = redis.createClient();
 var async = require("async");
-var inspect = require("util").inspect;
-var log = require("console").log;
 
 
 var subreddits = [];
 var workQueue = [];
 
-
+getUpdateTimes = function(element, index, arr){
+	client.get(element, function addToArray (err, resp) {
+		if (err) {throw err;};
+		if (subreddits.hasOwnProperty(element)) {};
+		updateArray.push(resp);
+	})
+}
 
 getSubreddits = function(err,items) {
 	if (err) {throw error;};
@@ -44,31 +48,13 @@ processSubmission = function(submission,lastUpdate) {
 	if (submission.created_utc < lastUpdate) {
 		return;
 	};
-	
+
 	tempObject.title = submission.title;
 	tempObject.url = submission.permalink;
 	tempObject.thumb = submission.thumbnail;
 	workQueue.push(tempObject);
 }
 
-getUpdateTimes = function(element, index, arr){
-	client.get(element, function addToArray (err, resp) {
-		if (err) {throw err;};
-		if (subreddits.hasOwnProperty(element)) {};
-		updateArray.push(resp);
-	})
-}
-
-var process = function(task){
-	log(inspect(task));
-}
-
 setInterval(function start () {
 	client.LRANGE("subreddits", 0, -1, getSubreddits);
-}, 3000);
-
-setInterval(function something () {
-	if (workQueue.length > 0) {
-		process(workQueue.shift());
-	};
-}, 10);
+}, POLLTIME);
