@@ -4,7 +4,8 @@
   "author": "Jason Tarasovic <jason@tarasovic.com",
   "dependencies": {
     "request": "2.34.0",
-    "redis": "0.10.1"
+    "redis": "0.10.1",
+    "async": "0.6.2"
   },
   "license": "GPLv2",
   "engines": {

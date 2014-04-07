@@ -1,47 +1,74 @@
 var request = require ("request");
-var redis = require ("redis");
+var redis = require ("redis")
 var client = redis.createClient();
+var async = require("async");
+var inspect = require("util").inspect;
 var log = require("console").log;
 
-var ts = Date.now() / 1000;
-var offset = 90*60;
-ts = ts - offset;
+
+var subreddits = [];
+var workQueue = [];
+
+
 
 getSubreddits = function(err,items) {
 	if (err) {throw error;};
-	items.forEach(getNewSubmissions);
+	client.HGETALL('last.update', function addToQueue (err, resp) {
+		if (err) {throw err;};
+		subreddits = resp;
+	})
+
+	items.forEach(getSubmissions);
 }
 
-getNewSubmissions = function(sub) {
-	request('http://www.reddit.com/r/'+sub+'/new.json?sort=new', processSubmissions);
+getSubmissions = function(sub) { 
+	request('http://www.reddit.com/r/'+sub+'/new.json?sort=new', processResponse);
 }
 
-processSubmissions = function(err,resp,body){
+processResponse = function(err,resp,body){
 	if (!err && resp.statusCode == 200) {
 		var newSubmissions = JSON.parse(body);
 		newSubmissions = newSubmissions.data.children;
-		
-		if (newSubmissions[0].data.subreddit) {
-			checkTime(newSubmissions[0].data.subreddit)
-		};
+		var subreddit = newSubmissions[0].data.subreddit.toLowerCase();
+		var lastUpdate = subreddits[subreddit];
+		var len = newSubmissions.length;
 
-		for(var i=0; i < newSubmissions.length; i++) {
-			if (newSubmissions[i].data.created_utc > ts) {
-				log(newSubmissions[i].data.title + "\n");
-			};
+		for(var i = 0; i < len; i++) {
+			processSubmission(newSubmissions[i].data, lastUpdate)
 		}
 	}
-};
-
-checkTime = function(sub) {
-	sub = sub.toLowerCase();
-	var query = sub + ':last.update';
-	log(query);
-	client.get(query,redis.print);
 }
 
+processSubmission = function(submission,lastUpdate) {
+	var tempObject = {};
+	if (submission.created_utc < lastUpdate) {
+		return;
+	};
+	
+	tempObject.title = submission.title;
+	tempObject.url = submission.permalink;
+	tempObject.thumb = submission.thumbnail;
+	workQueue.push(tempObject);
+}
 
+getUpdateTimes = function(element, index, arr){
+	client.get(element, function addToArray (err, resp) {
+		if (err) {throw err;};
+		if (subreddits.hasOwnProperty(element)) {};
+		updateArray.push(resp);
+	})
+}
 
-client.LRANGE("subreddits", 0, -1, getSubreddits);
+var process = function(task){
+	log(inspect(task));
+}
 
-client.quit();
+setInterval(function start () {
+	client.LRANGE("subreddits", 0, -1, getSubreddits);
+}, 3000);
+
+setInterval(function something () {
+	if (workQueue.length > 0) {
+		process(workQueue.shift());
+	};
+}, 10);
