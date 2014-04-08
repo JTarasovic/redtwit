@@ -5,13 +5,17 @@ var async = require("async");
 var emitter = require("events").EventEmitter;
 var util = require("util");
 var myself = {};
-var workQueue = [];
+//var workQueue = [];
 
-var RedditHandler = function(queue,poll) {
+var RedditHandler = function(options) {
+	// ensure singleton
+	if (myself instanceof RedditHandler) {
+		return myself;
+	};
 	emitter.call(this);
 	this.subreddits = [];
-	this.polltime = poll * 1000;
-	workQueue = queue;
+	this.workQueue = options.queue;
+	this.poll = options.poll * 1000;
 	myself = this;
 
 
@@ -20,14 +24,13 @@ var RedditHandler = function(queue,poll) {
 		if (err) {throw error;};
 		client.HGETALL('last.update', function addToQueue (err, resp) {
 			if (err) {throw err;};
-			subreddits = resp;
+			myself.subreddits = resp;
 		})
 
-		items.forEach(getSubmissions);
-	}
-
-	var getSubmissions = function(sub) { 
-		request('http://www.reddit.com/r/'+sub+'/new.json?sort=new', processResponse);
+		items.forEach(function(sub) { 
+			request('http://www.reddit.com/r/'+sub+'/new.json?sort=new', processResponse);
+		});
+		return;
 	}
 
 	var processResponse = function(err,resp,body){
@@ -35,7 +38,7 @@ var RedditHandler = function(queue,poll) {
 			var newSubmissions = JSON.parse(body);
 			newSubmissions = newSubmissions.data.children;
 			var subreddit = newSubmissions[0].data.subreddit.toLowerCase();
-			var lastUpdate = subreddits[subreddit];
+			var lastUpdate = myself.subreddits[subreddit];
 			console.log(lastUpdate);
 			var len = newSubmissions.length;
 
@@ -43,25 +46,27 @@ var RedditHandler = function(queue,poll) {
 				processSubmission(newSubmissions[i].data, lastUpdate)
 			}
 		}
+		return;
 	}
 
 	var processSubmission = function(submission,lastUpdate) {
-		var tempObject = {};
+		var task = {};
 		if (submission.created_utc < lastUpdate) {
 			return;
 		};
-		tempObject.title = submission.title;
-		tempObject.url = submission.permalink;
-		tempObject.thumb = submission.thumbnail;
-		workQueue.push(tempObject);
-		myself.emit('taskAdded', tempObject, submission);
+		task.title = submission.title;
+		task.url = submission.permalink;
+		task.thumb = submission.thumbnail;
+		myself.workQueue.push(task);
+		myself.emit('taskAdded', task, submission);
+		return;
 	}
 
 	this.start = function() {
-		console.log(this.polltime);
 		setInterval(function() {
 			client.LRANGE("subreddits", 0, -1, getSubreddits);
-		}, this.polltime);
+		}, this.poll);
+		return;
 	}
 
 }

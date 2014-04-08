@@ -7,7 +7,10 @@ var ins = require("util").inspect;
 var queue = [];
 
 var RedditHandler = require("./reddithandler");
-var rHandler = new RedditHandler(queue,3);
+var rHandler = new RedditHandler({
+	queue: [],
+	poll: 3
+});
 
 rHandler.on('taskAdded',function doShit () {
 	queue.shift();
