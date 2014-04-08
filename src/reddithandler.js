@@ -13,7 +13,6 @@ var RedditHandler = function(options) {
 	};
 	emitter.call(this);
 	this.subreddits = [];
-	this.workQueue = options.queue !== undefined ? options.queue : [];
 	this.startTime = {};
 	this.poll = options.poll !== undefined ? options.poll * 1000 : 10000;
 	this.max_retries = options.max_retries !== undefined ? max_retries : 5;
@@ -67,7 +66,8 @@ var RedditHandler = function(options) {
 		// should be safe to always update the time here
 		// may want to grab the timestamp from the most 
 		// recent submission to ensure that we don't miss any. TODO?
-		updateLastUpdate(subreddit, self.startTime[subreddit]);
+		
+		// updateLastUpdate(subreddit, self.startTime[subreddit]);
 
 		return;
 	}
@@ -82,17 +82,8 @@ var RedditHandler = function(options) {
 		task.url = submission.permalink;
 		task.thumb = submission.thumbnail;
 		
-		self.workQueue.push(task);
 		self.emit('taskAdded', task, submission);
 		
-		return;
-	}
-
-	// "public" method to start the timer and kick off the querying
-	this.start = function() {
-		this.timer = setInterval(function() {
-			client.LRANGE("subreddits", 0, -1, getSubreddits);
-		}, this.poll);
 		return;
 	}
 
@@ -102,7 +93,6 @@ var RedditHandler = function(options) {
 			if (err) {
 				return redisErrorHandler('Failed to set update time for: ', err);
 			};
-			console.log(resp);
 			return;
 		})
 	}
@@ -118,6 +108,23 @@ var RedditHandler = function(options) {
 		};
 		self.start();
 	}
+
+	// "public" method to start the timer and kick off the querying
+	this.start = function() {
+		this.timer = setInterval(function() {
+			client.LRANGE("subreddits", 0, -1, getSubreddits);
+		}, this.poll);
+		return;
+	}
+
+	this.shutdown = function (callback) {
+		console.log("Requested shutdown.");
+		clearInterval(this.timer);
+		client.quit();
+		return typeof(callback) === typeof(Function) ? callback() : null;
+	}
+
+	return this;
 }
 
 util.inherits(RedditHandler,emitter);

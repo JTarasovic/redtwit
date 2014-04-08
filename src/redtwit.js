@@ -3,24 +3,31 @@ var redis = require ("redis")
 var client = redis.createClient();
 var async = require("async");
 var ins = require("util").inspect;
+var date = new Date();
 
 var queue = [];
 
 var RedditHandler = require("./reddithandler");
 var rHandler = new RedditHandler({
-	queue: [],
 	poll: 3,
 	callback: function errorHandler (err) {
 		console.log(err);
 	}
 });
 
-rHandler.on('taskAdded',function doShit () {
-	queue.shift();
+var close = function () {
+	rHandler.shutdown(function shutdown () {
+		process.exit();
+	})
+}
+
+rHandler.on('taskAdded',function letsDoThis (task, submission) {
+	console.dir(task);
 })
 
-console.log("ready to start");
-rHandler.start();
+process.on('SIGTERM', close).on('SIGINT', close);
 
+console.log("Starting " + date.toString());
+rHandler.start();
 
 
