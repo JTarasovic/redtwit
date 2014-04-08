@@ -9,7 +9,10 @@ var queue = [];
 var RedditHandler = require("./reddithandler");
 var rHandler = new RedditHandler({
 	queue: [],
-	poll: 3
+	poll: 3,
+	callback: function errorHandler (err) {
+		console.log(err);
+	}
 });
 
 rHandler.on('taskAdded',function doShit () {
