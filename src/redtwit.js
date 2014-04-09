@@ -20,7 +20,11 @@ var close = function () {
 }
 
 rHandler.on('taskAdded',function letsDoThis (task) {
-	console.dir(task.thumb);
+	tHandler.post(task.title, task.url, function cb (err,data,resp) {
+		if (err) {
+			console.log(err);
+		};
+	});
 })
 
 process.on('SIGTERM', close).on('SIGINT', close);
