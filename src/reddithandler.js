@@ -50,7 +50,11 @@ var RedditHandler = function(options) {
 		newSubmissions = newSubmissions.data.children;
 		var subreddit = newSubmissions[0].data.subreddit.toLowerCase();
 		self.startTime[subreddit] = Math.floor(Date.now() / 1000);
-		var lastUpdate = self.subreddits[subreddit];
+
+		var lastUpdate = {};
+		if (self.subreddit) {
+			lastUpdate = self.subreddits[subreddit];
+		}
 
 		if(isNaN(lastUpdate) || lastUpdate === undefined){
 			lastUpdate = self.startTime[subreddit] - 86400 // 24 hours in seconds

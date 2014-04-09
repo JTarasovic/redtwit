@@ -13,19 +13,26 @@ var rHandler = new RedditHandler({
 var TwitterHandler = require("./twitterhandler");
 var tHandler = new TwitterHandler();
 
-var close = function () {
+var close = function (err,end,data) {
 	rHandler.shutdown(function shutdown () {
 		process.exit();
 	})
 }
 
 rHandler.on('taskAdded',function letsDoThis (task) {
+	console.dir(task);
 	tHandler.post(task.title, task.url, function cb (err,data,resp) {
 		if (err) {
 			console.log(err);
 		};
 	});
 })
+
+var dataHandler = function (err, data, resp) {
+	console.dir(data);
+}
+
+tHandler.messages(dataHandler, close);
 
 process.on('SIGTERM', close).on('SIGINT', close);
 
