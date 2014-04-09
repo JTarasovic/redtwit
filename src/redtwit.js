@@ -33,7 +33,7 @@ var dataHandler = function (err, data, resp) {
 	}
 	var msg = data.direct_message.text.toLowerCase();
 	if (msg.indexOf('sub') === 0 
-		|| data.direct_message.text.indexOf('unsub') === 0 ) {
+		|| msg.indexOf('unsub') === 0 ) {
 		console.log(msg);
 	}
 }
