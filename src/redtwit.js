@@ -1,5 +1,12 @@
 var date = new Date();
 var queue = [];
+var http = require('http');
+
+my_http.createServer(function onRequest (req,res){  
+    response.writeHeader(200, {"Content-Type": "text/plain"});  
+    response.write("Hello World");  
+    response.end();  
+}).listen(process.env.PORT || 3030);  
 
 
 var RedditHandler = require("./reddithandler");
