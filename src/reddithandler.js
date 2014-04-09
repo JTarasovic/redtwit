@@ -15,21 +15,19 @@ var RedditHandler = function(options) {
 	this.subreddits = [];
 	this.startTime = {};
 	this.poll = options.poll !== undefined ? options.poll * 1000 : 10000;
-	this.max_retries = options.max_retries || 5;
 	this.callback = typeof(options.callback) === typeof(Function) ? options.callback : undefined;
-	this.errors = {};
 	self = this;
 
 
 	// get subreddits that we're interested in from redis
 	var getSubreddits = function(err,items) {
 		if (err) {
-			return redisErrorHandler("Exceeded max_retries: ", err);
+			return redisErrorHandler("Failed to fetch subreddits: ", err);
 		};
 
 		client.HGETALL('last.update', function addToQueue (err, resp) {
 			if (err) {
-				return redisErrorHandler("Failed to retrieve most recent update times: ", err);
+				return redisErrorHandler("Failed to fetch most recent update times: ", err);
 			};
 			self.subreddits = resp;
 		})
@@ -111,10 +109,8 @@ var RedditHandler = function(options) {
 		// regardless of whether we've exceeded max
 		// clear the timer or it keeps going.
 		clearInterval(self.timer); 
-		if (self.error.redisError > max_retries) {
-			return self.callback(msg + err);
-		};
-		self.start();
+		return self.callback(msg + err);
+		
 	}
 
 	// "public" method to start the timer and kick off the querying
