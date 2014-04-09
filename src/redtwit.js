@@ -20,16 +20,22 @@ var close = function (err,end,data) {
 }
 
 rHandler.on('taskAdded',function letsDoThis (task) {
-	console.dir(task);
-	tHandler.post(task.title, task.url, function cb (err,data,resp) {
+/*	tHandler.post(task.title, task.url, function cb (err,data,resp) {
 		if (err) {
 			console.log(err);
 		};
-	});
+	});*/
 })
 
 var dataHandler = function (err, data, resp) {
-	console.dir(data);
+	if (data === null) {
+		return;
+	}
+	var msg = data.direct_message.text.toLowerCase();
+	if (msg.indexOf('sub') === 0 
+		|| data.direct_message.text.indexOf('unsub') === 0 ) {
+		console.log(msg);
+	}
 }
 
 tHandler.messages(dataHandler, close);
