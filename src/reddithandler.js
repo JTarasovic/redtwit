@@ -73,7 +73,8 @@ var RedditHandler = function(callback) {
 		}
 
 		if(isNaN(lastUpdate) || lastUpdate === undefined){
-			lastUpdate = self.startTime[subreddit] - 86400 // 24 hours in seconds
+			var offset = process.env.REDDIT_DEFAULT_HOURS * 60 * 60;
+			lastUpdate = self.startTime[subreddit] - offset;
 			updateLastUpdate(subreddit,lastUpdate);
 		}
 
