@@ -3,13 +3,10 @@ var queue = [];
 
 
 var RedditHandler = require("./reddithandler");
-var rHandler = new RedditHandler({
-	poll: 3,
-	callback: function errorHandler (err) {
+var rHandler = new RedditHandler(function errorHandler (err) {
 		if (err) {
 			console.log(err);	// do something with this.
 		};
-	}
 });
 
 var TwitterHandler = require("./twitterhandler");
@@ -22,11 +19,11 @@ var close = function (err,end,data) {
 }
 
 rHandler.on('taskAdded',function letsDoThis (task) {
-	/*tHandler.post(task.title, task.url, function cb (err,data,resp) {
+	tHandler.post(task.title, task.url, function cb (err,data,resp) {
 		if (err) {
 			console.log(err);
 		};
-	});*/
+	});
 })
 
 var dataHandler = function (err, data, resp) {
