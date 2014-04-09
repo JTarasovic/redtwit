@@ -1,7 +1,7 @@
 var twitterAPI = require('node-twitter-api');
 var twitter = new twitterAPI({
-	consumerKey: process.env.TWITTER_CONS_KEY,
-	consumerSecret: process.env.TWITTER_CONS_SECRET,
+	consumerKey: process.env.TWITTER_CON_KEY,
+	consumerSecret: process.env.TWITTER_CON_SECRET,
 	callback: ""
 });
 var accTok = process.env.TWITTER_ACC_TOKEN;
