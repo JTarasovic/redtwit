@@ -6,7 +6,9 @@ var RedditHandler = require("./reddithandler");
 var rHandler = new RedditHandler({
 	poll: 3,
 	callback: function errorHandler (err) {
-		console.log(err);
+		if (err) {
+			console.log(err);	// do something with this.
+		};
 	}
 });
 
@@ -20,11 +22,11 @@ var close = function (err,end,data) {
 }
 
 rHandler.on('taskAdded',function letsDoThis (task) {
-	tHandler.post(task.title, task.url, function cb (err,data,resp) {
+	/*tHandler.post(task.title, task.url, function cb (err,data,resp) {
 		if (err) {
 			console.log(err);
 		};
-	});
+	});*/
 })
 
 var dataHandler = function (err, data, resp) {
@@ -32,9 +34,13 @@ var dataHandler = function (err, data, resp) {
 		return;
 	}
 	var msg = data.direct_message.text.toLowerCase();
-	if (msg.indexOf('sub') === 0 
-		|| msg.indexOf('unsub') === 0 ) {
-		console.log(msg);
+	if (msg.indexOf('sub') === 0){
+		rHandler.addSubreddit(msg.substring(4,msg.length));
+		console.log(msg.substring(4,msg.length))
+	}
+	if (msg.indexOf('unsub') === 0 ) {
+		rHandler.remSubreddit(msg.substring(6,msg.length));
+		console.log(msg.substring(6,msg.length))
 	}
 }
 
@@ -42,5 +48,5 @@ tHandler.messages(dataHandler, close);
 
 process.on('SIGTERM', close).on('SIGINT', close);
 
-console.log("Starting " + date.toString());
+console.log("Starting: " + date.toString());
 rHandler.start();

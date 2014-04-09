@@ -42,9 +42,12 @@ var RedditHandler = function(options) {
 
 	// process the response from reddit or pass along err to callback
 	var processResponse = function(err,resp,body){
-		if (err || resp.statusCode !== 200) {
+		if (err) {
 			return self.callback(err);
 		}
+		if (resp.statusCode !== 200) {
+			return;		//just skip for now.
+		};
 
 		var newSubmissions = JSON.parse(body);
 		newSubmissions = newSubmissions.data.children;
@@ -122,11 +125,36 @@ var RedditHandler = function(options) {
 		return;
 	}
 
+	// "public" method to gracefully disconnect and shutdown
 	this.shutdown = function (callback) {
 		console.log("Requested shutdown.");
 		clearInterval(this.timer);
 		client.quit();
 		return typeof(callback) === typeof(Function) ? callback() : null;
+	}
+
+	// "public" method to add a subreddit from redis
+	this.addSubreddit = function(subreddit){
+		if (self.subreddits[subreddit]) {
+			return;
+		};
+		client.RPUSH('subreddits',subreddit,function subredditAdded (err,resp) {
+			if (err) {
+				redisErrorHandler("Failed to add subreddit: ", err);
+			};
+		})
+	}
+
+	// "public" method to remove a subreddit from redis
+	this.remSubreddit = function(subreddit){
+		if (!self.subreddits[subreddit]) {
+			return;
+		};
+		client.LREM('subreddits',0,subreddit,function subredditAdded (err,resp) {
+			if (err) {
+				redisErrorHandler("Failed to remove subreddit: ", err);
+			};
+		})
 	}
 
 	return this;
