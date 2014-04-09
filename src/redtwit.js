@@ -20,11 +20,11 @@ var close = function (err,end,data) {
 }
 
 rHandler.on('taskAdded',function letsDoThis (task) {
-/*	tHandler.post(task.title, task.url, function cb (err,data,resp) {
+	tHandler.post(task.title, task.url, function cb (err,data,resp) {
 		if (err) {
 			console.log(err);
 		};
-	});*/
+	});
 })
 
 var dataHandler = function (err, data, resp) {
@@ -44,5 +44,3 @@ process.on('SIGTERM', close).on('SIGINT', close);
 
 console.log("Starting " + date.toString());
 rHandler.start();
-
-

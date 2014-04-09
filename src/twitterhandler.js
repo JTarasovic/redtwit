@@ -37,15 +37,13 @@ var TwitterHandler = function (options) {
 
 	this.messages = function (dataCallback, endCallback) {
 		twitter.getStream('user',{} ,accTok ,accTokSec
-		,dataCallback
-		,endCallback)
+			,dataCallback
+			,endCallback)
 	}
 	var updateLinkLength = function () {
 		twitter.help('configuration', {}, accTok, accTokSec, function (err,data,resp) {
 			if (data['short_url_length']) {
 				this.len = data['short_url_length'];
-				console.log(data['short_url_length']);
-				console.log(this.len);
 			};
 		});
 	}
