@@ -1,11 +1,6 @@
-var request = require ("request");
-var redis = require ("redis")
-var client = redis.createClient();
-var async = require("async");
-var ins = require("util").inspect;
 var date = new Date();
-
 var queue = [];
+
 
 var RedditHandler = require("./reddithandler");
 var rHandler = new RedditHandler({
@@ -15,14 +10,17 @@ var rHandler = new RedditHandler({
 	}
 });
 
+var TwitterHandler = require("./twitterhandler");
+var tHandler = new TwitterHandler();
+
 var close = function () {
 	rHandler.shutdown(function shutdown () {
 		process.exit();
 	})
 }
 
-rHandler.on('taskAdded',function letsDoThis (task, submission) {
-	console.dir(task);
+rHandler.on('taskAdded',function letsDoThis (task) {
+	console.dir(task.thumb);
 })
 
 process.on('SIGTERM', close).on('SIGINT', close);

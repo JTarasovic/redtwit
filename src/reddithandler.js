@@ -15,7 +15,7 @@ var RedditHandler = function(options) {
 	this.subreddits = [];
 	this.startTime = {};
 	this.poll = options.poll !== undefined ? options.poll * 1000 : 10000;
-	this.max_retries = options.max_retries !== undefined ? max_retries : 5;
+	this.max_retries = options.max_retries || 5;
 	this.callback = typeof(options.callback) === typeof(Function) ? options.callback : undefined;
 	this.errors = {};
 	self = this;
@@ -81,8 +81,9 @@ var RedditHandler = function(options) {
 		task.title = submission.title;
 		task.url = submission.permalink;
 		task.thumb = submission.thumbnail;
+		task.submission = submission;
 		
-		self.emit('taskAdded', task, submission);
+		self.emit('taskAdded', task);
 		
 		return;
 	}
