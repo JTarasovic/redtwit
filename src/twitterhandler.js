@@ -1,8 +1,11 @@
-var config = require('../config');
 var twitterAPI = require('node-twitter-api');
-var twitter = new twitterAPI(config.twitter);
-var accTok = config.twitter.accessToken;
-var accTokSec = config.twitter.accessTokenSecret;
+var twitter = new twitterAPI({
+	consumerKey: process.env.TWITTER_CONS_KEY,
+	consumerSecret: process.env.TWITTER_CONS_SECRET,
+	callback: ""
+});
+var accTok = process.env.TWITTER_ACC_TOKEN;
+var accTokSec = process.env.TWITTER_ACC_SECRET;
 var redditUrl = 'http://www.reddit.com';
 
 var TwitterHandler = function (options) {
