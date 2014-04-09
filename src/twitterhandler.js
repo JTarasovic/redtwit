@@ -5,12 +5,6 @@ var accTok = config.twitter.accessToken;
 var accTokSec = config.twitter.accessTokenSecret;
 var redditUrl = 'http://www.reddit.com';
 
-	/* twitter.verifyCredentials(accTok, accTokSec,function test (err, data, resp) {
-		if (err) {
-			return console.log(err);
-		};
-	});*/
-
 var TwitterHandler = function (options) {
 	this.lat = 39.828127;
 	this.lng = -98.579404;
