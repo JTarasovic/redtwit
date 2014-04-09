@@ -15,18 +15,24 @@ if (process.env.REDISTOGO_URL) {
 }
 
 
-var RedditHandler = function(options) {
+var RedditHandler = function(callback) {
 	// ensure singleton
 	if (self instanceof RedditHandler) {
 		return self;
 	};
+
+	if (!(this instanceof RedditHandler)) {
+		return new RedditHandler(callback);
+	};
+
 	emitter.call(this);
 	this.subreddits = [];
 	this.startTime = {};
-	this.poll = options.poll !== undefined ? options.poll * 1000 : 10000;
-	this.callback = typeof(options.callback) === typeof(Function) ? options.callback : undefined;
+	this.poll = process.env.REDDIT_POLL_FREQUENCY || 3;
+	this.poll *= 1000;
+	this.callback = typeof(callback) === typeof(Function) ? callback : undefined;
 	self = this;
-
+	
 
 	// get subreddits that we're interested in from redis
 	var getSubreddits = function(err,items) {
