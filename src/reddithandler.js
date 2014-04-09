@@ -62,7 +62,7 @@ var RedditHandler = function(options) {
 		self.startTime[subreddit] = Math.floor(Date.now() / 1000);
 
 		var lastUpdate = {};
-		if (self.subreddit) {
+		if (self.subreddits) {
 			lastUpdate = self.subreddits[subreddit];
 		}
 
@@ -80,9 +80,11 @@ var RedditHandler = function(options) {
 		// should be safe to always update the time here
 		// may want to grab the timestamp from the most 
 		// recent submission to ensure that we don't miss any. TODO?
-		
-		// updateLastUpdate(subreddit, self.startTime[subreddit]);
 
+		if (process.env.NODE_ENV === 'production') {
+			updateLastUpdate(subreddit, self.startTime[subreddit]);
+		};
+		
 		return;
 	}
 
