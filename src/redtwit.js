@@ -4,12 +4,6 @@ var express = require('express');
 var port = process.env.PORT || 5000;
 var app = express();
  
-app.listen(port);
-app.get('*',function (req, res) {
-	res.sendfile('./public/index.html');
-});
-
-
 var RedditHandler = require("./reddithandler");
 var rHandler = new RedditHandler(function errorHandler (err) {
 		if (err) {
@@ -25,8 +19,6 @@ var close = function (err,end,data) {
 		process.exit();
 	})
 }
-
-rHandler.on('taskAdded',postToTwitter);
 
 var postToTwitter = function (task) {
 	tHandler.post(task.title, task.url, function cb (err,data,resp) {
@@ -51,9 +43,17 @@ var dataHandler = function (err, data, resp) {
 	}
 }
 
+app.listen(port);
+app.get('*',function (req, res) {
+	res.sendfile('./public/index.html');
+});
+
+rHandler.on('taskAdded',postToTwitter);
+
 tHandler.messages(dataHandler, close);
 
 process.on('SIGTERM', close).on('SIGINT', close);
 
 console.log("Starting: " + date.toString());
+
 rHandler.start();
