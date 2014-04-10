@@ -26,7 +26,7 @@ var close = function (err,end,data) {
 	})
 }
 
-// rHandler.on('taskAdded',postToTwitter);
+rHandler.on('taskAdded',postToTwitter);
 
 var postToTwitter = function (task) {
 	tHandler.post(task.title, task.url, function cb (err,data,resp) {
