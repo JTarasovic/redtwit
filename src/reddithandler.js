@@ -1,6 +1,5 @@
 var request = require ("request");
 var redis = require ("redis");
-var async = require("async");
 var emitter = require("events").EventEmitter;
 var util = require("util");
 var self = {};
