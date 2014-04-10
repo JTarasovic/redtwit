@@ -1,12 +1,13 @@
 var date = new Date();
 var queue = [];
-var http = require('http');
-
-http.createServer(function onRequest (req,res){  
-    response.writeHeader(200, {"Content-Type": "text/plain"});  
-    response.write("Hello World");  
-    response.end();  
-}).listen(process.env.PORT || 3030);  
+var express = require('express');
+var port = process.env.PORT || 5000;
+var app = express();
+ 
+app.listen(port);
+app.get('*',function (req, res) {
+	res.sendfile('./public/index.html');
+});
 
 
 var RedditHandler = require("./reddithandler");
@@ -25,13 +26,15 @@ var close = function (err,end,data) {
 	})
 }
 
-rHandler.on('taskAdded',function letsDoThis (task) {
+// rHandler.on('taskAdded',postToTwitter);
+
+var postToTwitter = function (task) {
 	tHandler.post(task.title, task.url, function cb (err,data,resp) {
 		if (err) {
 			console.log(err);
 		};
 	});
-})
+}
 
 var dataHandler = function (err, data, resp) {
 	if (data === null) {
