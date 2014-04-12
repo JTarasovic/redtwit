@@ -1,0 +1,3 @@
+[submodule "lib/node-twitter-api"]
+	path = lib/node-twitter-api
+	url = git://github.com/jtarasovic/node-twitter-api

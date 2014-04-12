@@ -1,5 +1,6 @@
-var TwitterHandler = require('./twitterhandler');
+var TwitterHandler = require('../lib/twitterhandler');
 var tHandler = new TwitterHandler();
+var util = require('util');
 
 function onReady () {
 	tHandler.post('Received ready event...');
@@ -7,15 +8,19 @@ function onReady () {
 }
 
 function onPost (data, post) {
-	//console.dir(data)
+	console.log(post);
+	console.error('\n\ntwitterhandlertest.js > onPost > ~12');
 }
 
 function onStream (data, resp) {
-	console.dir(data);
+	console.error(util.inspect(data));
+	console.error(util.inspect(data));
 }
 
 function onDM (data, resp) {
 	console.log('new dm from: ' + data.source.name);
+	console.error('\n\ntwitterhandlertest.js > onDM > ~22');
+	console.error(util.inspect(data));
 }
 
 function onFollow (data, resp) {
@@ -28,9 +33,11 @@ function onFavorite (data, resp) {
 
 function onError (err, resp, post) {
 	console.log(err);
-	if (resp) {
-	 console.log(JSON.parse(resp));
-	};	
+
+	console.error('\n\ntwitterhandlertest.js > onError > ~36');
+	if(err) console.error('err:\n' + util.inspect(err))
+	if(resp) console.error('resp:\n' + util.inspect(resp))
+	if(post) console.error('post: \n' + util.inspect(post))
 }
 
 tHandler.on('ready', onReady);
