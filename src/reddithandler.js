@@ -1,173 +1,206 @@
-var request = require ("request");
-var redis = require ("redis");
-var emitter = require("events").EventEmitter;
 var util = require("util");
-var self = {};
+var emitter = require("events").EventEmitter;
+var redis = require ("redis");
+var ONE_SECOND = 1000;				// 1000 milliseconds
+var ONE_HOUR = 60 * 60; 			// 3600 seconds
+var ONE_DAY = 24 * ONE_HOUR;		// 86400 seconds
 
-if (process.env.REDISTOGO_URL) {
-	var rtg = require('url').parse(process.env.REDISTOGO_URL);
-	var client = redis.createClient(rtg.port, rtg.hostname);
-
-	client.auth(rtg.auth.split(':')[1]);
-} else {
-	var client = redis.createClient();
-}
-
-
-var RedditHandler = function(callback) {
-	// ensure singleton
-	if (self instanceof RedditHandler) {
-		return self;
-	};
-
+var RedditHandler = function() {
 	if (!(this instanceof RedditHandler)) {
-		return new RedditHandler(callback);
+		return new RedditHandler();
 	};
 
 	emitter.call(this);
-	this.subreddits = [];
-	this.startTime = {};
+	this._request = require ("request");
+	this._baseUrl = 'http://www.reddit.com/r/';
+	this._date = new Date();
+	this._client = {};
+	this._redditSort = process.env.REDDIT_SORT || 'new';
 	this.poll = process.env.REDDIT_POLL_FREQUENCY || 3;
-	this.poll *= 1000;
-	this.callback = typeof(callback) === typeof(Function) ? callback : undefined;
-	self = this;
-	
+	this.offset = process.env.REDDIT_DEFAULT_HOURS || 6;
+	this.poll *= ONE_SECOND;
+	this.offset *= ONE_HOUR;	// 60 min * 60 sec in an hour
+	this.subreddits = [];
 
-	// get subreddits that we're interested in from redis
-	var getSubreddits = function(err,items) {
-		if (err) {
-			return redisErrorHandler("Failed to fetch subreddits: ", err);
-		};
+	if (process.env.REDISTOGO_URL) {
+		var rtg = require('url').parse(process.env.REDISTOGO_URL);
+		this._client = redis.createClient(rtg.port, rtg.hostname);
 
-		client.HGETALL('last.update', function addToQueue (err, resp) {
-			if (err) {
-				return redisErrorHandler("Failed to fetch most recent update times: ", err);
-			};
-			self.subreddits = resp;
-		})
-
-		items.forEach(function(sub) { 
-			request('http://www.reddit.com/r/'+sub+'/new.json?sort=new', processResponse);
-		});
-		return;
+		client.auth(rtg.auth.split(':')[1]);
+	} else {
+		this._client = redis.createClient();
 	}
 
-	// process the response from reddit or pass along err to callback
-	var processResponse = function(err,resp,body){
-		if (err) {
-			return self.callback(err);
-		}
-		if (resp.statusCode !== 200) {
-			return;		//just skip for now.
-		};
-
-		var newSubmissions = JSON.parse(body);
-		newSubmissions = newSubmissions.data.children;
-		var subreddit = newSubmissions[0].data.subreddit.toLowerCase();
-		self.startTime[subreddit] = Math.floor(Date.now() / 1000);
-
-		var lastUpdate = {};
-		if (self.subreddits) {
-			lastUpdate = self.subreddits[subreddit];
-		}
-
-		if(isNaN(lastUpdate) || lastUpdate === undefined){
-			var offset = process.env.REDDIT_DEFAULT_HOURS * 60 * 60;
-			lastUpdate = self.startTime[subreddit] - offset;
-			updateLastUpdate(subreddit,lastUpdate);
-		}
-
-		var len = newSubmissions.length;
-
-		for(var i = 0; i < len; i++) {
-			processSubmission(newSubmissions[i].data, lastUpdate)
-		}
-		
-		// should be safe to always update the time here
-		// may want to grab the timestamp from the most 
-		// recent submission to ensure that we don't miss any. TODO?
-
-		if (process.env.NODE_ENV === 'production') {
-			updateLastUpdate(subreddit, self.startTime[subreddit]);
-		};
-		
-		return;
-	}
-
-	// takes one submission and determines whether to add it to queue or skip it
-	var processSubmission = function(submission, lastUpdate) {
-		var task = {};
-		if (submission.created_utc < lastUpdate) {
-			return;
-		};
-		task.title = submission.title;
-		task.url = submission.permalink;
-		task.thumb = submission.thumbnail;
-		task.submission = submission;
-		
-		self.emit('taskAdded', task);
-		
-		return;
-	}
-
-	// update the last update hash in redis
-	var updateLastUpdate = function (subreddit,newTime) {
-		client.HSET('last.update',subreddit,newTime, function updateError (err, resp) {
-			if (err) {
-				return redisErrorHandler('Failed to set update time for: ', err);
-			};
-			return;
-		})
-	}
-
-	// handle all redis errors through this method that will call the error callback
-	var redisErrorHandler = function (msg, err) {
-		self.error.redisError += 1;
-		// regardless of whether we've exceeded max
-		// clear the timer or it keeps going.
-		clearInterval(self.timer); 
-		return self.callback(msg + err);
-		
-	}
+	this._queryUrl = '/' + this._redditSort +'.json?sort=' + this._redditSort;
 
 	// "public" method to start the timer and kick off the querying
-	this.start = function() {
-		this.timer = setInterval(function() {
-			client.LRANGE("subreddits", 0, -1, getSubreddits);
-		}, this.poll);
-		return;
+	this.start = function(callback) {
+		console.log('RedditHandler starting');
+		this._timer = setInterval(_start.bind(this), this.poll);
+		this.emit('start');
+		return typeof(callback) === typeof(Function) ? callback() : null;
 	}
 
 	// "public" method to gracefully disconnect and shutdown
 	this.shutdown = function (callback) {
-		console.log("Requested shutdown.");
+		console.log("RedditHandler shutting down.");
 		clearInterval(this.timer);
 		client.quit();
+		this.emit('shutdown');
 		return typeof(callback) === typeof(Function) ? callback() : null;
 	}
 
 	// "public" method to add a subreddit from redis
 	this.addSubreddit = function(subreddit){
-		if (self.subreddits[subreddit]) {
+		if (this.subreddits.indexOf(subreddit) > -1) {
 			return;
 		};
-		client.RPUSH('subreddits',subreddit,function subredditAdded (err,resp) {
-			if (err) {
-				redisErrorHandler("Failed to add subreddit: ", err);
-			};
-		})
+		this._client.LPUSH(
+			'subreddits',
+			subreddit,
+			_addSubreddit.bind(this, subreddit)
+			);
+		return;
 	}
 
 	// "public" method to remove a subreddit from redis
 	this.remSubreddit = function(subreddit){
-		if (!self.subreddits[subreddit]) {
+		if (this.subreddits.indexOf(subreddit) < 0) {
 			return;
 		};
-		client.LREM('subreddits',0,subreddit,function subredditAdded (err,resp) {
-			if (err) {
-				redisErrorHandler("Failed to remove subreddit: ", err);
+		this._client.LREM(
+			'subreddits',
+			0,
+			subreddit,
+			_removeSubreddit.bind(this, subreddit)
+			);
+	}
+
+	// start by getting the list of subreddits
+	function _start () {
+		this._client.LRANGE("subreddits", 0, -1, _querySubreddits.bind(this));
+		return;
+	}
+
+	// get subreddits that we're interested in from redis
+	function _querySubreddits (err,subreddits) {
+		if (err) {
+			this.emit('error',err);
+			return;
+		};
+		this.subreddits = subreddits;
+		subreddits.forEach(_doQuery.bind(this));
+		return;
+	}
+
+	// request the submissions from reddit
+	function _doQuery (subreddit) {
+		var updateURL = this._baseUrl + subreddit + this._queryUrl;
+		this._request(updateURL, _processResponse.bind(this, subreddit));
+	}
+
+	// process the response from reddit or pass along err to callback
+	function _processResponse (subreddit, err, resp, body){
+		
+		if (err) {
+			this.emit('error',err);
+			return;
+		}
+		if (resp.statusCode !== 200) {
+			return;		//just skip for now.
+		};
+
+		var newSub = JSON.parse(body);
+		newSub = newSub.data.children;
+
+		var len = newSub.length;
+		for (var i = 0; i < len; i++) {
+			_querySubmission.call(this, subreddit, newSub[i].data);
+		};
+
+		return;
+	}
+
+	// takes one submission and queries redis to make sure we haven't already seen it
+	function _querySubmission (subreddit, submission) {
+		this._client.GET(
+			submission.name, 
+			_checkSubmission.bind(this, subreddit, submission)
+			);
+		return;
+	}
+
+	// takes one submission and determines whether to it is new
+	function _checkSubmission (subreddit, submission, err, resp) {
+		if (err) {
+			this.emit('error', err);
+			return;
+		};
+
+		// not previously seen (or no longer in cache?)
+		if (resp === null) {
+			_processSubmission.call(this, subreddit, submission);
+		};
+		return;
+	}
+
+	// turns the raw submission into a post 
+	function _processSubmission (subreddit, submission) {
+		var post = {};
+		post.title = submission.title;
+		post.name = submission.name;
+		post.permalink = submission.permalink;
+		post.thumbnail = submission.thumbnail;
+		post.is_self = submission.is_self;
+		post.created_utc = submission.created_utc;
+		post.url = submission.url;
+		post.subreddit = subreddit;
+		
+		this._client.SETEX(
+			submission.name,
+			ONE_DAY,
+			1,
+			_updateRedis.bind(this, post)
+			);
+
+		return;	
+	}
+
+	// redis has been updated with the post
+	function _updateRedis (post, err, resp) {
+		if (err) {
+			this.emit('error', err);
+			return;
+		};
+
+		var now = Math.floor(this._date.getTime() / 1000);
+
+		if (post.created_utc < (now - this.offset)) {
+				return;			// quit early. don't actually emit new.
 			};
-		})
+
+			this.emit('new', post, resp);
+		}
+
+	// push a subreddit onto the list of subreddits
+	function _addSubreddit (subreddit, err, resp) {
+		if (err) {
+			this.emit('error', err);
+			return;
+		}
+		this.subreddits.push(subreddit);
+		this.emit('added', subreddit, resp);
+		return;
+	}
+
+	// remove a subreddit from the list of subreddits
+	function _removeSubreddit (subreddit, err, resp) {
+		if (err) {
+			this.emit('error', err);
+			return;
+		};
+		this.emit('removed', subreddit, resp);
+		return;
 	}
 
 	return this;
