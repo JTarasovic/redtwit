@@ -51,8 +51,9 @@ rHandler.on('new',postToTwitter);
 
 tHandler.messages(dataHandler, close);
 
-process.on('SIGTERM', close).on('SIGINT', close);
+process.on('SIGTERM', close)
+		.on('SIGINT', close);
 
-console.log("Starting: " + date.toString());
+console.log("Redtwit Bot starting.");
 
 rHandler.start();
