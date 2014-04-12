@@ -3,7 +3,7 @@ var rHandler = new RedditHandler();
 var counter = 0;
 
 rHandler.on('start', function startCallback () {
-	console.log('started');
+	console.log('started successfully');
 });
 
 rHandler.on('added', function addedCallback (subreddit, resp) {
@@ -13,16 +13,17 @@ rHandler.on('added', function addedCallback (subreddit, resp) {
 
 rHandler.on('removed', function removedCallback (subreddit, resp) {
 	console.log('Removed: ' + subreddit + '\t' + resp);
+	rHandler.forceError('forced error');
 });
+
 rHandler.on('new', function newCallback (post) {
-	counter++;
-	if(counter % 10 === 0){
-		console.log('Found: ' + post.subreddit + '\t' + post.name);
-	}
+	console.log('Found: ' + post.subreddit + '\t' + post.name);
 });
+
 rHandler.on('error', function errorCallback (err) {
 	console.log('OH NOES!!!');
 	console.log(err);
+	rHandler.shutdown();
 });
 
 rHandler.start();

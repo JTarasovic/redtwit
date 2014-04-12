@@ -44,8 +44,8 @@ var RedditHandler = function() {
 	// "public" method to gracefully disconnect and shutdown
 	this.shutdown = function (callback) {
 		console.log("RedditHandler shutting down.");
-		clearInterval(this.timer);
-		client.quit();
+		clearInterval(this._timer);
+		this._client.quit();
 		this.emit('shutdown');
 		return typeof(callback) === typeof(Function) ? callback() : null;
 	}
@@ -74,6 +74,10 @@ var RedditHandler = function() {
 			subreddit,
 			_removeSubreddit.bind(this, subreddit)
 			);
+	}
+
+	this.forceError = function (err) {
+		this.emit('error', err);
 	}
 
 	// start by getting the list of subreddits
