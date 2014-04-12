@@ -5,8 +5,10 @@
   "dependencies": {
     "request": "2.34.0",
     "redis": "0.10.1",
-    "express": "4.0.0"
+    "express": "4.0.0",
+    "node-twitter-api": "jtarasovic/node-twitter-api"
   },
+  "private": true,
   "license": "GPLv2",
   "engines": {
   	"node": "0.10.26"
