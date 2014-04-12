@@ -20,8 +20,8 @@ var close = function (err,end,data) {
 	})
 }
 
-var postToTwitter = function (task) {
-	tHandler.post(task.title, task.url, function cb (err,data,resp) {
+var postToTwitter = function (post, resp) {
+	tHandler.post(task.title, task.permalink, function cb (err,data,resp) {
 		if (err) {
 			console.log(err);
 		};
@@ -48,7 +48,7 @@ app.get('*',function (req, res) {
 	res.sendfile('./public/index.html');
 });
 
-rHandler.on('taskAdded',postToTwitter);
+rHandler.on('new',postToTwitter);
 
 tHandler.messages(dataHandler, close);
 
