@@ -1,4 +1,4 @@
-var TwitterHandler = require('twitterhandler');
+var TwitterHandler = require('../lib/twitterhandler');
 var tHandler = new TwitterHandler();
 var util = require('util');
 
