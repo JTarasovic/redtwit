@@ -4,10 +4,10 @@ var express = require('express');
 var port = process.env.PORT || 5000;
 var app = express();
  
-var RedditHandler = require("./reddithandler");
+var RedditHandler = require("./lib/reddithandler");
 var rHandler = new RedditHandler();
 
-var TwitterHandler = require("./twitterhandler");
+var TwitterHandler = require("./lib/twitterhandler");
 var tHandler = new TwitterHandler();
 
 var close = function (err,end,data) {
