@@ -1,3 +1,18 @@
+I've included some of the full API responses. Hopefully, it'll be helpful to someone else as well.
+
+[Follow](#follow)
+
+[Favorite](#favorite)
+
+[Unfavorite](#unfavorite)
+
+[Direct Message](#direct message)
+
+
+
+Follow
+---
+
 ```json
 {
     "event": "follow",
@@ -86,6 +101,9 @@
     "created_at": "Sat Apr 12 19:58:44 +0000 2014"
 }
 ```
+
+Favorite
+---
 
 ```json
 {
@@ -267,6 +285,8 @@
     }
 }
 ```
+Unfavorite
+---
 
 ```json
 {
@@ -448,6 +468,8 @@
     }
 }
 ```
+Direct Message
+---
 
 ```json
 {
