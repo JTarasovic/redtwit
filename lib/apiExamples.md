@@ -6,7 +6,7 @@ I've included some of the full API responses. Hopefully, it'll be helpful to som
 
 [Unfavorite](#unfavorite)
 
-[Direct Message](#direct message)
+[Direct Message](#direct-message)
 
 
 
