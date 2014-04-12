@@ -55,10 +55,10 @@ function onError (err, resp, post) {
 	console.error(util.inspect(arguments));
 }
 
-tHandler.on('ready', onReady);
 
 //tHandler.on('streamData', onStream);
 
+tHandler.on('ready', onReady);
 tHandler.on('dm', onDM);
 tHandler.on('favorite', onFavorite);
 tHandler.on('unfavorite', onUnFavorite);
