@@ -1,4 +1,4 @@
-var RedditHandler = require('../src/reddithandler.js');
+var RedditHandler = require('../lib/reddithandler.js');
 var rHandler = new RedditHandler();
 var counter = 0;
 
