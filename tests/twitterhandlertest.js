@@ -7,37 +7,46 @@ function onReady () {
 	tHandler.startUserStream();
 }
 
-function onPost (data, post) {
-	console.log(post);
+function onPost (data, resp, post) {
+	console.log('\npost');
 	console.error('\n\ntwitterhandlertest.js > onPost > ~12');
+	console.error(util.inspect(arguments));
 }
 
 function onStream (data, resp) {
-	console.error(util.inspect(data));
-	console.error(util.inspect(data));
+	console.log('\nstream');
+	console.error('\n\ntwitterhandlertest.js > onStream > ~18');
+	console.error(util.inspect(arguments));
 }
 
 function onDM (data, resp) {
-	console.log('new dm from: ' + data.source.name);
+	console.log('\ndm');
 	console.error('\n\ntwitterhandlertest.js > onDM > ~22');
-	console.error(util.inspect(data));
+	console.error(util.inspect(arguments));
 }
 
-function onFollow (data, resp) {
-	console.log('follow!');
+function onFollow (data) {
+	console.log('\nfollow!');
+	console.error('\n\ntwitterhandlertest.js > onFollow > ~30');
+	console.error(util.inspect(arguments));
 }
 
-function onFavorite (data, resp) {
-	console.log('favorite');	
+function onFavorite (data) {
+	console.log('\nfavorite');
+	console.error('\n\ntwitterhandlertest.js > onFavorite > ~36');
+	console.error(util.inspect(arguments));
+}
+
+function onUnFavorite (data) {
+	console.log('\nunfavorite');
+	console.error('\n\ntwitterhandlertest.js > onunFavorite > ~42');
+	console.error(util.inspect(arguments));
 }
 
 function onError (err, resp, post) {
-	console.log(err);
-
-	console.error('\n\ntwitterhandlertest.js > onError > ~36');
-	if(err) console.error('err:\n' + util.inspect(err))
-	if(resp) console.error('resp:\n' + util.inspect(resp))
-	if(post) console.error('post: \n' + util.inspect(post))
+	console.log('\nerror');
+	console.error('\n\ntwitterhandlertest.js > onError > ~48');
+	console.error(util.inspect(arguments));
 }
 
 tHandler.on('ready', onReady);
@@ -46,38 +55,6 @@ tHandler.on('ready', onReady);
 
 tHandler.on('dm', onDM);
 tHandler.on('favorite', onFavorite);
+tHandler.on('unfavorite', onUnFavorite);
 tHandler.on('follow', onFollow);
 tHandler.on('error', onError);
-
-/*req.addListener('response', function (res) {
-		res.setEncoding('utf-8');
-		res.addListener('data', function (chunk) {
-			if (chunk == "\r\n") {
-				dataCallback(null, {}, chunk, res);
-				return;
-			} else if (chunk.substr(chunk.length - 2) == '\r\n') {
-				msg.push(chunk.substr(0, chunk.length -2));
-				var ret = msg.join("");
-				//console.log(ret);
-				msg = [];
-				for (var i = 0; i < ret.length; i++) {
-					console.error(ret.charCodeAt(i) + '\t' + ret.charAt(i));
-				};
-
-				try {
-					dataCallback(null, JSON.parse(ret), ret, res);
-				} catch (e) {
-				//console.log(e);
-				dataCallback({ message: "Error while parsing Twitter-Response.", error: e }, null, chunk, res);
-				}	
-			return;
-			} else {
-				msg.push(chunk);
-				return;
-			}
-		});
-		res.addListener('end', function() {
-			endCallback();
-		});
-	});
-	req.end();*/
