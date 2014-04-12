@@ -5,11 +5,7 @@ var port = process.env.PORT || 5000;
 var app = express();
  
 var RedditHandler = require("./reddithandler");
-var rHandler = new RedditHandler(function errorHandler (err) {
-		if (err) {
-			console.log(err);	// do something with this.
-		};
-});
+var rHandler = new RedditHandler();
 
 var TwitterHandler = require("./twitterhandler");
 var tHandler = new TwitterHandler();
@@ -21,7 +17,7 @@ var close = function (err,end,data) {
 }
 
 var postToTwitter = function (post, resp) {
-	tHandler.post(task.title, task.permalink, function cb (err,data,resp) {
+	tHandler.post(post.title, post.permalink, function cb (err,data,resp) {
 		if (err) {
 			console.log(err);
 		};
@@ -49,6 +45,9 @@ app.get('*',function (req, res) {
 });
 
 rHandler.on('new',postToTwitter);
+// rHandler.on('added',);
+// rHandler.on('removed');
+// rHandler.on('error', )
 
 tHandler.messages(dataHandler, close);
 
