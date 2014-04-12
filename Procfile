@@ -1,1 +1,1 @@
-web: node src/redtwit.js
+web: node redtwit.js
