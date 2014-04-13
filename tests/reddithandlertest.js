@@ -6,6 +6,10 @@ rHandler.on('start', function startCallback () {
 	console.log('started successfully');
 });
 
+rHandler.on('keywords', function keywordsCallback (arr) {
+	console.log('%d keywords received', arr.length);
+});
+
 rHandler.on('added', function addedCallback (subreddit, resp) {
 	console.log('Added: ' + subreddit + '\t' + resp);
 	setTimeout(rHandler.remSubreddit.bind(rHandler), 15000, subreddit);
