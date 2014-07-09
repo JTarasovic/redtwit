@@ -16,39 +16,39 @@ function onStart () {
 
 function onDM (dm, resp){
 	if (dm === null) return;
+	console.log('Recieved: ', msg);
 
+	var resp = 'Sorry, I don\'t understand that.';
 	var msg = dm.direct_message.text.toLowerCase();
 	if (msg.indexOf('sub ') === 0){
 		rHandler.addSubreddit(msg.substring(4,msg.length));
-		console.log('Adding subreddit: ', msg.substring(4,msg.length));
+		resp = 'Adding subreddit: ' + msg.substring(4,msg.length);
 		return;
 	}
 	if (msg.indexOf('unsub ') === 0 ) {
 		rHandler.remSubreddit(msg.substring(6,msg.length));
-		console.log('Removing subreddit: ', msg.substring(6,msg.length));
+		resp = 'Removing subreddit: ' + msg.substring(6,msg.length);
 		return;
 	}
 	if (msg.indexOf('keyword ') === 0) {
 		rHandler.addKeyword(msg.substring(8,msg.length));
-		console.log('Adding keyword: ', msg.substring(8,msg.length));
+		resp = 'Adding keyword: ' + msg.substring(8,msg.length);
 		return;
 	}
 	if (msg.indexOf('unkeyword ') === 0) {
 		rHandler.remKeyword(msg.substring(10, msg.length));
-		console.log('Removing keyword: ', msg.substring(10,msg.length));
+		resp = 'Removing keyword: ', msg.substring(10,msg.length);
 		return;
 	}
 	if (isLikeFollowing(msg)) {
 		if (rHandler.subreddits && (rHandler.subreddits instanceof Array)) {
 			var subreddits = rHandler.subreddits.join(', ');
-			subreddits = formatFollowing(subreddits);
-			tHandler.post(subreddits);
+			resp = formatFollowing(subreddits);
 		}
 		return;
 	}
-
-	var oops = 'Sorry, I don\'t understand that.';
-	tHandler.dm(oops, dm.direct_message.sender_screen_name);
+	console.log(resp);
+	tHandler.dm(resp, dm.direct_message.sender_screen_name);
 }
 
 function isLikeFollowing (msg) {
