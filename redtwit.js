@@ -16,10 +16,10 @@ function onStart () {
 
 function onDM (dm, resp){
 	if (dm === null) return;
-	console.log('Recieved: ', msg);
 
 	var resp = 'Sorry, I don\'t understand that.';
 	var msg = dm.direct_message.text.toLowerCase();
+	console.log('Recieved: ', msg);
 	if (msg.indexOf('sub ') === 0){
 		rHandler.addSubreddit(msg.substring(4,msg.length));
 		resp = 'Adding subreddit: ' + msg.substring(4,msg.length);
