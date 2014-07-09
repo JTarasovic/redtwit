@@ -6,15 +6,27 @@ rHandler.on('start', function startCallback () {
 	console.log('started successfully');
 });
 
-rHandler.on('added', function addedCallback (subreddit, resp) {
-	console.log('Added: ' + subreddit + '\t' + resp);
-	setTimeout(rHandler.remSubreddit.bind(rHandler), 15000, subreddit);
+rHandler.on('keyword', function keywordCallback (keyword, isAdd, resp) {
+	var str = isAdd ? 'Added' : 'Removed';
+	console.log(str,'keyword:', keyword);
+	if (isAdd) {
+		rHandler.remKeyword(keyword);
+	}
+
 });
 
-rHandler.on('removed', function removedCallback (subreddit, resp) {
-	console.log('Removed: ' + subreddit + '\t' + resp);
-	rHandler.forceError('forced error');
+rHandler.on('subreddit', function subredditCallback (subreddit, isAdd, resp) {
+	var str = isAdd ? 'Added' : 'Removed';
+	console.log(str, 'subreddit:', subreddit, '\t', resp);
+	if(isAdd){
+		rHandler.addKeyword('BALLS!!!');
+		setTimeout(rHandler.remSubreddit.bind(rHandler), 15000, subreddit);
+	} else {
+		rHandler.forceError('forced error');
+	}
 });
+
+
 
 rHandler.on('new', function newCallback (post) {
 	console.log('Found: ' + post.subreddit + '\t' + post.name);
